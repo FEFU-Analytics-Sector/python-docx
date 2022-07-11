@@ -19,6 +19,18 @@ class Table(Parented):
     def __init__(self, tbl, parent):
         super(Table, self).__init__(parent)
         self._element = self._tbl = tbl
+        self.column_count = self._column_count
+        self._check_columns_count_error()
+
+    def _check_columns_count_error(self):
+        """"""
+        for col_count in reversed(range(1, self._column_count + 1)):
+            try:
+                columns = self._get_cells(col_count)
+                self.column_count = col_count
+                return
+            except IndexError:
+                pass
 
     def add_column(self, width):
         """
@@ -77,7 +89,7 @@ class Table(Parented):
         Return |_Cell| instance correponding to table cell at *row_idx*,
         *col_idx* intersection, where (0, 0) is the top, left-most cell.
         """
-        cell_idx = col_idx + (row_idx * self._column_count)
+        cell_idx = col_idx + (row_idx * self.column_count)
         return self._cells[cell_idx]
 
     def column_cells(self, column_idx):
@@ -85,7 +97,7 @@ class Table(Parented):
         Sequence of cells in the column at *column_idx* in this table.
         """
         cells = self._cells
-        idxs = range(column_idx, len(cells), self._column_count)
+        idxs = range(column_idx, len(cells), self.column_count)
         return [cells[idx] for idx in idxs]
 
     @lazyproperty
@@ -100,7 +112,7 @@ class Table(Parented):
         """
         Sequence of cells in the row at *row_idx* in this table.
         """
-        column_count = self._column_count
+        column_count = self.column_count
         start = row_idx * column_count
         end = start + column_count
         return self._cells[start:end]
@@ -158,17 +170,11 @@ class Table(Parented):
     def table_direction(self, value):
         self._element.bidiVisual_val = value
 
-    @property
-    def _cells(self):
-        """
-        A sequence of |_Cell| objects, one for each cell of the layout grid.
-        If the table contains a span, one or more |_Cell| object references
-        are repeated.
-        """
-        col_count = self._column_count
+    def _get_cells(self, col_count):
         cells = []
         for tc in self._tbl.iter_tcs():
-            for grid_span_idx in range(tc.grid_span):
+            grid_span = min(col_count, tc.grid_span)
+            for grid_span_idx in range(grid_span):
                 if tc.vMerge == ST_Merge.CONTINUE:
                     cells.append(cells[-col_count])
                 elif grid_span_idx > 0:
@@ -176,6 +182,16 @@ class Table(Parented):
                 else:
                     cells.append(_Cell(tc, self))
         return cells
+
+    @property
+    def _cells(self):
+        """
+        A sequence of |_Cell| objects, one for each cell of the layout grid.
+        If the table contains a span, one or more |_Cell| object references
+        are repeated.
+        """
+        col_count = self.column_count
+        return self._get_cells(col_count)
 
     @property
     def _column_count(self):
