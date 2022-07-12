@@ -11,6 +11,7 @@ from __future__ import (
 from ..enum.style import WD_STYLE_TYPE
 from .parfmt import ParagraphFormat
 from .run import Run
+from .form import Form
 from ..shared import Parented
 
 
@@ -93,6 +94,14 @@ class Paragraph(Parented):
         return [Run(r, self) for r in self._p.r_lst]
 
     @property
+    def forms(self):
+        """
+        Sequence of |Form| instances corresponding to the <w:std> elements in
+        this paragraph.
+        """
+        return [Form(sdt, self) for sdt in self._p.sdt_lst]
+
+    @property
     def style(self):
         """
         Read/Write. |_ParagraphStyle| object representing the style assigned
@@ -129,6 +138,11 @@ class Paragraph(Parented):
         text = ''
         for run in self.runs:
             text += run.text
+
+        if not text:
+            for form in self.forms:
+                text += form.text
+
         return text
 
     @text.setter

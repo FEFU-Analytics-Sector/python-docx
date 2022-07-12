@@ -246,3 +246,7 @@ from .text.run import CT_Br, CT_R, CT_Text  # noqa
 register_element_cls('w:br', CT_Br)
 register_element_cls('w:r',  CT_R)
 register_element_cls('w:t',  CT_Text)
+
+from .text.form import CT_Sdt, CT_SdtContent
+register_element_cls('w:sdt',     CT_Sdt)
+register_element_cls('w:sdtContent',     CT_SdtContent)
