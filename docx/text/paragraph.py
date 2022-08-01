@@ -136,12 +136,13 @@ class Paragraph(Parented):
         run-level formatting, such as bold or italic, is removed.
         """
         text = ''
-        for run in self.runs:
-            text += run.text
+
+        for form in self.forms:
+            text += form.text
 
         if not text:
-            for form in self.forms:
-                text += form.text
+            for run in self.runs:
+                text += run.text
 
         return text
 
