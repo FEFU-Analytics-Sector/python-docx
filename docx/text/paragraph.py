@@ -12,6 +12,7 @@ from ..enum.style import WD_STYLE_TYPE
 from .parfmt import ParagraphFormat
 from .run import Run
 from .form import Form
+from .hyperlink import Hyperlink
 from ..shared import Parented
 
 
@@ -102,6 +103,14 @@ class Paragraph(Parented):
         return [Form(sdt, self) for sdt in self._p.sdt_lst]
 
     @property
+    def hyperlinks(self):
+        """
+        Sequence of |Form| instances corresponding to the <w:std> elements in
+        this paragraph.
+        """
+        return [Hyperlink(hyperlink, self) for hyperlink in self._p.hyperlink_lst]
+
+    @property
     def style(self):
         """
         Read/Write. |_ParagraphStyle| object representing the style assigned
@@ -139,6 +148,10 @@ class Paragraph(Parented):
 
         for form in self.forms:
             text += form.text
+
+        if not text:
+            for hyperlink in self.hyperlinks:
+                text += hyperlink.text
 
         if not text:
             for run in self.runs:
